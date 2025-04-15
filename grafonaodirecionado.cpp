@@ -31,7 +31,7 @@ int main() {
     cin >> n >> m;
     readAdjList(adj, m);       // Calls the template function
     printAdjList(adj, n);      // Calls the template function
-
+    
     cout << "Fim\n";
     return 0;
 }
