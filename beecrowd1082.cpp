@@ -40,51 +40,52 @@ void printAdjList(const vector<int> (&adj)[N], int n) {
 }
 
 template <size_t N>
-void dfs(vector<int> (&adj)[N], bool visited[N], int v, vector<int> &components){
-     visited[v] = true;
-     components.push_back(v);
-     for (int neighbour : adj[v]){
+void dfs(vector<int> (&adj)[N], bool visited[N], int v, vector<int> &components, vector<int> &alreadyPassed){
+    visited[v] = true;
+    components.push_back(v);
+    alreadyPassed.push_back(v);
+    for (int neighbour : adj[v]){
         if (not visited[neighbour]){
-            dfs(adj, visited, neighbour, components);
+            dfs(adj, visited, neighbour, components, alreadyPassed);
         }
      }
 }
 
 template <size_t N>
-void checkComponents(vector<int> (&adj)[N], bool visited[N], int n, vector<int> &components){
+void checkComponents(vector<int> (&adj)[N], bool visited[N], int n, vector<int> &components, vector<vector<int>> &componentsList, vector<int> &alreadyPassed){
     for(int i = 0; i < n; i++){
-        if(find(components.begin(), components.end(), i) == components.end()){
-            dfs(adj, visited, i, components);
-            components.push_back(-1);
+        if(find(alreadyPassed.begin(), alreadyPassed.end(), i) == alreadyPassed.end()){
+            dfs(adj, visited, i, components, alreadyPassed);
+            sort(components.begin(), components.end());
+            componentsList.push_back(components);
+            components.clear();
         }
     }
 }
 
-void scriptOutput(vector<int> &components, int caseNumber, vector<char> &translate){
+void scriptOutput(vector<vector<int>> &componentsList, int caseNumber, vector<char> &translate){
     int count = 0;
     cout << "Case " << "#" << caseNumber << ":" << endl;
-    for (int element : components){
-        if(element == -1){
-            count++;
-            cout << endl;
-        }else{
-            cout << translate[element] << ",";
+    for (int i = 0; i < componentsList.size(); i++){
+        for(int j = 0; j < componentsList[i].size();j++){
+            cout << translate[componentsList[i][j]] << ",";
         }
-        
+        cout << endl;
+        count++;
     }
     cout << count << " connected components" << endl;
-    cout << " " << endl;
 }
 
 template <size_t N>
-void cleanUpTrash(vector<int> (&adj)[N], bool visited[N], vector<int> &components, int n){
+void cleanUpTrash(vector<int> (&adj)[N], bool visited[N], vector<vector<int>> &componentsList, int n, vector<int> &alreadyPassed){
     for (int j = 0; j < n; j++){
         visited[j] = false;
     }
     for(int k = 0; k < n; k++){
         adj[k].clear();
     }
-    components.clear();
+    componentsList.clear();
+    alreadyPassed.clear();
 }
 
 int main() {
@@ -94,15 +95,17 @@ int main() {
     bool visited[MAXN];
     vector<char> translate = {'a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z'};
     vector<int> components;
+    vector<vector<int>> componentsList;
+    vector<int> alreadyPassed;
     int n, m, v, trials;
 
     cin >> trials;
     for (int i = 0; i < trials; i++){
         cin >> n >> m;
         readAdjListModified(adj, m, translate);
-        checkComponents(adj, visited, n, components);
-        scriptOutput(components, i+1, translate);
-        cleanUpTrash(adj, visited, components, n);
+        checkComponents(adj, visited, n, components, componentsList, alreadyPassed);
+        scriptOutput(componentsList, i+1, translate);
+        cleanUpTrash(adj, visited, componentsList, n, alreadyPassed);
     }
          
     return 0;
